@@ -1,2 +1,3 @@
-# python-projects
-Some cool python code
+# gemcrawler
+Some cool pygame game
+collaboration of sadru and byl3x
