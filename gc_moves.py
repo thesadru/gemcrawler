@@ -1,15 +1,10 @@
-def enemymove(level,walls=["#","<","+","x"]):
+""" an AI (A Ifstatement) that lets enemies move automaticly """
+def enemymove(level,heropos,walls=["#","<","+","x"]):
+    import copy
     from gc_pathfind import pathfind
     
     
-    selected = [-1,-1] #find hero
-    for row in level:
-         selected[0] += 1
-         selected[1] = -1
-         for subtile in row:
-             selected[1] += 1
-             if subtile == ">":
-                 heropos = selected[:]
+    heropos = gc.heropos(level)
                  
     current_enemies = [] #find enemies
     selected = [-1,-1]
@@ -20,15 +15,12 @@ def enemymove(level,walls=["#","<","+","x"]):
              selected[1] += 1
              if type(subtile) != str:
                 current_enemies.append([subtile,selected[:]][:])
-    print(current_enemies)
     
     turns = []
     for enemy_list in current_enemies: #create path for enemies
         enemyname = enemy_list[0]
         enemypos  = enemy_list[1]
-        print(enemypos,"->",heropos," | ",enemyname.range,"x",enemyname.speed) #some info
         full_path = pathfind(enemypos,heropos,level,walls)
-        print(full_path,"\n")
         if full_path != False and full_path != None: #test for a valid pathfind
             for i in range(enemyname.range):
                 try:
@@ -50,59 +42,91 @@ def enemymove(level,walls=["#","<","+","x"]):
         turns.append(full_path[:]) #finally append path
         
     
-    for i in turns:
-        print(i)
-    
     completelevel = []
+    level_copy = copy.deepcopy(level) #copy the level for in-cycle mutation
     for cycle in range(5): #start cycle for all steps (animation)
         for current in current_enemies: #go for each entity one by one
             turn = turns[current_enemies.index(current)] #take the turn linked with entity
-            if type(level[turn[cycle+1][0]] [turn[cycle+1][1]]) == str: #check if stepping on a block
-                level[turn[cycle  ][0]] [turn[cycle  ][1]] = " "        #delete entity
-                level[turn[cycle+1][0]] [turn[cycle+1][1]] = current[0] #create entity
-                print([turn[cycle  ][0]],[turn[cycle  ][1]],"  ->",
-                      [turn[cycle+1][0]],[turn[cycle+1][1]])
+            if type(level_copy[turn[cycle+1][0]] [turn[cycle+1][1]]) == str: #check if stepping on a block
+                level_copy = copy.deepcopy(level_copy)
+                level_copy[turn[cycle  ][0]][turn[cycle  ][1]] = " "        #delete entity
+                level_copy[turn[cycle+1][0]][turn[cycle+1][1]] = current[0] #create entity
+                level_copy[turn[cycle  ][0]][turn[cycle  ][1]],level_copy[turn[cycle+1][0]][turn[cycle+1][1]] = " ",current[0]
             else:
                 turn = [turn[cycle+1],turn[cycle+1],turn[cycle+1],turn[cycle+1],turn[cycle+1]] #stop if the path if blocked
-        print()
-        completelevel.append(level[:]) #append thenew level
-    
+        completelevel.append(level_copy) #append the new level
         
-    if completelevel[0]==completelevel[-1]: #raise exception if the code is bad (idk just it does)
-        class Failed(Exception):
-            pass
-        raise Failed("first and last output are the same")
     return completelevel #RETURN
+    
 
-from gc_generate import level as gen #generation of levels
+""" lets the hero do his moves with player input"""
+def heromove(level,heropos,walkreach,walkto,walls=["#"]):
+    print(walkreach)
+    if walkto in walkreach and level[walkto[0]][walkto[1]] not in walls and type(level[walkto[0]][walkto[1]]) in [str,int]:
+        level[heropos[0]][heropos[1]] = " "
+        level[walkto[0]][walkto[1]] = ">"
+        
+    else:
+        return False
+    
+    return level
+
+# =============================================================================
+    
+    
+import gc_generate as gen  
+from time import sleep  
+from copy import deepcopy as copy
+import gc_tools as gc
 from gc_character import *
-output = enemymove(gen(enemies))
-print("\n\n")
-for z in output:
-    for x in z:
-        for y in x:
-            if type(y) == str:
-                print(y,end="")
+
+level = gen.level(enemies)
+heropos = gc.heropos(level)
+count = 5
+for x in enemymove(level,heropos):
+    print("  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5  ")
+    for i in x:
+        if count < 9:
+            count += 1
+        else:
+            count = 0
+        print(count,end=" ")
+        for ii in i:
+            if type(ii) == str:
+                print(ii,end=" ")
             else:
-                print(list(str(y.id))[0],end="")
-            print(" ",end="")
-        print("")
+                print(str(ii.id)[0],end=" ")
+        print(count)
+    print("  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5  ")
     print("\n")
+    
+movingrange = gc.movingrange(level,heropos,5)
 
-
-# =============================================================================
-# PLEASE READ:
-#     code has an error that was found but not resolved
-#     in line 68 appending just copies the first item in list instead of apending the required list
-#     this makes the level always stay the same
-#     for faster checking, an excpetion is raised if the level is same
-#     if you want to see the print, comment the raise command at line 74
-#     there is no need to chec the pathfinding algorithm, as there is no error there
-#         
-#     there are 3 imported files: gc_generate, gc_characters and gc_pathfind
-#     gc_generate = file that creates levels
-#     gc_characters = database of characters, enemies and bosses
-#     gc_pathfind = A* pathfinding algorithm
-#     
-#     if you can fix this, please tell me
-# =============================================================================
+pos_x = int(input("height: "))
+pos_y = int(input("lenght: "))
+level_copy = copy(level)
+frick = True
+while frick:
+    pos_x = int(input("height: "))
+    pos_y = int(input("lenght: "))
+    new_level = heromove(level,heropos,movingrange,[pos_x,pos_y])
+    frick = True if new_level==False else False
+level = copy(new_level)
+if level==level_copy:
+    raise ValueError("you didn't move")
+count = -1
+print("  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5  ")
+for i in x:
+    if count < 9:
+        count += 1
+    else:
+        count = 0
+    print(count,end=" ")
+    for ii in i:
+        if type(ii) == str:
+            print(ii,end=" ")
+        else:
+            print(str(ii.id)[0],end=" ")
+    print(count)
+print("  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5  ")
+print("\n")

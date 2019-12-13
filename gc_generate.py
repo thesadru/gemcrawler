@@ -1,4 +1,4 @@
-def level(enemies,w ="#",g =" ",s =">",e ="<",k ="+",c = "x"):
+def level(enemies,amount=12,w ="#",g =" ",s =">",e ="<",k ="+",c = "x"):
           #w #wall
           #g #ground
           #s #hero position
@@ -26,18 +26,18 @@ def level(enemies,w ="#",g =" ",s =">",e ="<",k ="+",c = "x"):
             return False
     
     import random
-    if type(enemies) == list:
+    if type(enemies) == list: # creating random seed
         enemyseed = ""
         for i in enemies:
             try:
                 enemyseed += i
             except:
-                enemyseed += str(i.id)
+                enemyseed += str(i.id)+","
         seed = str(int(random.random()*10**16))+"|"+enemyseed
-    else:
+    else: # using given input as seed
         seed = enemies
         
-    random.seed(seed)
+    random.seed(seed) # setting the seed
     # random generation
     walls = [random.choice([0,1]),  # 0 is middle
              random.choice([0,1]),
@@ -49,8 +49,8 @@ def level(enemies,w ="#",g =" ",s =">",e ="<",k ="+",c = "x"):
     deadends = [0,0,0,0]
     wall_thin = [False,False,False,False]
     
-    for i in range(4):
-        if   walls[i-1] == 0 and walls[i] == 0:
+    for i in range(4): # randomly choose if you can walk by the center or by the wall
+        if   walls[i-1] == 0 and walls[i] == 0: #  randomly choose deadend
             miniwalls[i] = random.choice([0,1,2,3]) # urdl,lurd,dlur,rdlu
             if   miniwalls[i] == 0:
                 deadends[i] = 0
@@ -83,10 +83,10 @@ def level(enemies,w ="#",g =" ",s =">",e ="<",k ="+",c = "x"):
                 deadends[i] = 3
         
     freecorners  = [0,1,2,3]
-    for i in range(4):
+    for i in range(4): # easier way to find a deadend
         freecorners[i] = [i,abs(deadends[i]+i)%4]
     
-    corner_start = random.choice(freecorners)
+    corner_start = random.choice(freecorners) # choose start,end,key and chest
     freecorners.remove(corner_start)
     corner_end   = random.choice(freecorners)
     freecorners.remove(corner_end)
@@ -95,7 +95,7 @@ def level(enemies,w ="#",g =" ",s =">",e ="<",k ="+",c = "x"):
     corner_chest = random.choice(freecorners)
     freecorners.remove(corner_chest)
         
-    if walls[0] == 1:
+    if walls[0] == 1: # thin out the walls in middle
         wall_thin[0] = random.choice([0,1])
     if walls[1] == 1:
         wall_thin[1] = random.choice([0,1])
@@ -104,7 +104,7 @@ def level(enemies,w ="#",g =" ",s =">",e ="<",k ="+",c = "x"):
     if walls[3] == 1:
         wall_thin[3] = random.choice([0,1])
         
-    level = [
+    level = [ # level template
         [w,w,w,w,w,w,w,w,w,w,w,w,w,w,w,w],
         [w,g,g,g,g,g,g,g,g,g,g,g,g,g,g,w],
         [w,g,g,g,g,g,g,g,g,g,g,g,g,g,g,w],
@@ -123,7 +123,7 @@ def level(enemies,w ="#",g =" ",s =">",e ="<",k ="+",c = "x"):
         [w,w,w,w,w,w,w,w,w,w,w,w,w,w,w,w],
     ]
     
-    if walls[0] == 0:
+    if walls[0] == 0: # set the basic middle walls
         tileset([[5 ,7 ],[5 ,8 ],[6 ,7 ],[6 ,8 ]],[w,w,w,w])
     else:
         tileset([[1 ,7 ],[1 ,8 ],[2 ,7 ],[2 ,8 ]],[w,w,w,w])
@@ -142,7 +142,7 @@ def level(enemies,w ="#",g =" ",s =">",e ="<",k ="+",c = "x"):
         
     #===========================================================================
         
-    if   miniwalls[0] == 0:
+    if   miniwalls[0] == 0: # set up rest of the walls
         if   deadends[0] == 0:
             tileset([[1 ,4 ],[2 ,4 ],[3 ,3 ],[4 ,3 ]],[w,w,g,g])
         elif deadends[0] == 1:
@@ -228,13 +228,13 @@ def level(enemies,w ="#",g =" ",s =">",e ="<",k ="+",c = "x"):
     
     #===========================================================================
     
-    if walls == [1,1,1,1]:
+    if walls == [1,1,1,1]: # delete middle block if there's no use
         tileset([[7 ,7 ],[7 ,8 ],[8 ,7 ],[8 ,8 ]] , [g,g,g,g])
     else:
         
     #===========================================================================
         
-        if corner_start==0 or corner_start==2:
+        if corner_start==0 or corner_start==2: # thin out the walls
             if   walls[0]==0 and miniwalls[0]!=1:
                 tileset([[3 ,7 ],[4 ,7 ],[5 ,7 ],[6 ,7 ]],[g,g,g,g])
             elif walls[0]==0 and miniwalls[1]!=2:
@@ -272,7 +272,7 @@ def level(enemies,w ="#",g =" ",s =">",e ="<",k ="+",c = "x"):
     
     #===========================================================================
     
-    if   wall_thin[0] == 0:
+    if   wall_thin[0] == 0: # thin out the rest of the walls
         tileset([[1 ,7 ],[2 ,7 ]],[g,g,g])
         if miniwalls[0] != 1:
             tileset([[4 ,7 ],[3 ,7 ]],[g,g])
@@ -308,7 +308,7 @@ def level(enemies,w ="#",g =" ",s =">",e ="<",k ="+",c = "x"):
     
     #===========================================================================
     
-    if analyse([[7 ,6 ],[6 ,7 ],[6 ,8 ],[7 ,9 ]]):
+    if analyse([[7 ,6 ],[6 ,7 ],[6 ,8 ],[7 ,9 ]]): # cut the corners in middle
         tileset([[7 ,7 ],[7 ,8 ]],[g,g])
         
     if analyse([[6 ,8 ],[7 ,9 ],[8 ,9 ],[9 ,8 ]]):
@@ -323,19 +323,40 @@ def level(enemies,w ="#",g =" ",s =">",e ="<",k ="+",c = "x"):
     
     #===========================================================================
     
+    from gc_tools import remdupli
+    from copy import deepcopy as copy
+    
     possible_space = []
-    for x in range(len(level)):
+    banned_tiles = []
+    skip = random.choice([True,False])
+    for x in range(len(level)): # collect all possible spaces
         for y in range(len(level[x])):
-            if level[x][y] == g:
-                possible_space += [[x,y]]
-    for x in range(12):
+            if level[x][y] == g and [x,y] not in banned_tiles and skip==False:
+                pos_x = copy(x)
+                pos_y = copy(y)
+                possible_space.append([pos_x,pos_y])
+                banned_tiles.extend([
+                        [pos_x  ,pos_y+1],
+                        [pos_x+1,pos_y  ],
+                ])
+                if random.choice([True,False]):
+                    banned_tiles.extend([
+                            [pos_x+1,pos_y+1],
+                            [pos_x+1,pos_y-1],
+                    ])
+                remdupli(banned_tiles)
+            else:
+                skip = False
+    
+    for i in range(amount): # randomly replace the places with enemies
         replace = random.choice(possible_space)
         level[replace[0]][replace[1]] = random.choice(enemies)
+        possible_space.remove(replace)
             
     #===========================================================================
 
     special_tiles = [corner_start,corner_end,corner_key,corner_chest]
-    for i in special_tiles:
+    for i in special_tiles: # replace special tiles position with desired tiles
         working_with = []
         if   i[0] == 0:
             for x in level[0:8]:

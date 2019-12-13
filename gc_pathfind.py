@@ -1,4 +1,4 @@
-def pathfind(start,end,maze,walls=["#"]):
+def pathfind(start,end,maze,walls=["#"],maxsteps=100):
     start = tuple(start)
     end = tuple(end)
     
@@ -37,7 +37,7 @@ def pathfind(start,end,maze,walls=["#"]):
         loops = 1
         while len(open_list) > 0:
             loops += 1
-            if loops >= 200:
+            if loops >= maxsteps:
                 return False
             # Get the current node
             current_node = open_list[0]
